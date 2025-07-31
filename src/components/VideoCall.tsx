@@ -2,9 +2,9 @@
 // src/components/VideoCall.tsx
 "use client";
 
-import React, { useEffect, useRef, useState, useCallback } from 'react';
+import React, { useEffect, useState, useCallback } from 'react';
 import { Button } from './ui/button';
-import { PhoneOff, Mic, MicOff, Video as VideoIcon, VideoOff, Share2, Loader2 } from 'lucide-react';
+import { PhoneOff, Mic, MicOff, Video as VideoIcon, VideoOff, Share2, Loader2, ExternalLink, Copy, Users } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 
 interface VideoCallProps {
@@ -14,197 +14,257 @@ interface VideoCallProps {
 }
 
 const VideoCall: React.FC<VideoCallProps> = ({ userId, roomId, onHangUp }) => {
-  const localVideoRef = useRef<HTMLVideoElement>(null);
-  const remoteVideoRef = useRef<HTMLVideoElement>(null);
-  
-  const [isMuted, setIsMuted] = useState(false);
-  const [isVideoOff, setIsVideoOff] = useState(false);
-  const [callStatus, setCallStatus] = useState<string>("Initializing...");
-  const [localStream, setLocalStream] = useState<MediaStream | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
+  const [roomData, setRoomData] = useState<any>(null);
+  const [error, setError] = useState<string | null>(null);
+  const [isHost, setIsHost] = useState(false);
+  const [participantCount, setParticipantCount] = useState(1);
   const { toast } = useToast();
 
-  // Initialize local media stream
+  // Check if room exists and create/join accordingly
   useEffect(() => {
-    const initializeMedia = async () => {
+    const initializeRoom = async () => {
       try {
-        setCallStatus("Requesting camera and microphone permissions...");
-        const stream = await navigator.mediaDevices.getUserMedia({
-          video: true,
-          audio: true
-        });
+        setIsLoading(true);
         
-        setLocalStream(stream);
-        if (localVideoRef.current) {
-          localVideoRef.current.srcObject = stream;
+        // First, check if room exists
+        const checkResponse = await fetch(`/api/whereby?roomName=${roomId}`);
+        const checkData = await checkResponse.json();
+        
+        let action = 'create';
+        if (checkData.exists) {
+          action = 'join';
+          setIsHost(false);
+        } else {
+          setIsHost(true);
         }
-        setCallStatus("Connected - Waiting for other participants...");
-        toast({ title: "Media Access Granted", description: "Camera and microphone are now active." });
-      } catch (error) {
-        console.error("Error accessing media devices:", error);
-        setCallStatus("Failed to access camera/microphone");
+
+        // Create or join room
+        const response = await fetch('/api/whereby', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            roomName: roomId,
+            participantName: userId,
+            action: action,
+          }),
+        });
+
+        if (!response.ok) {
+          const errorData = await response.json();
+          throw new Error(errorData.error || 'Failed to create/join room');
+        }
+
+        const data = await response.json();
+        setRoomData(data);
+        
+        if (data.isExisting) {
+          toast({ 
+            title: "Joined Room", 
+            description: "You've joined an existing video call room." 
+          });
+        } else {
+          toast({ 
+            title: "Room Created", 
+            description: "Video call room is ready. Share the link with others to join." 
+          });
+        }
+      } catch (err) {
+        console.error('Error initializing room:', err);
+        setError(err instanceof Error ? err.message : 'Failed to create/join room');
         toast({ 
           variant: 'destructive', 
-          title: "Media Access Error", 
-          description: "Please allow camera and microphone access to use video calls." 
+          title: "Room Error", 
+          description: "Could not create or join video call room. Please try again." 
         });
+      } finally {
+        setIsLoading(false);
       }
     };
 
-    initializeMedia();
+    initializeRoom();
+  }, [roomId, userId, toast]);
 
-    // Cleanup function
-    return () => {
-      if (localStream) {
-        localStream.getTracks().forEach(track => track.stop());
-      }
-    };
-  }, [toast]);
+  const handleJoinCall = () => {
+    if (roomData?.roomUrl) {
+      // Open Whereby room in a new tab
+      window.open(roomData.roomUrl, '_blank');
+      toast({ 
+        title: "Opening Video Call", 
+        description: "Video call is opening in a new tab." 
+      });
+    }
+  };
 
-  const handleToggleMute = () => {
-    if (localStream) {
-      const audioTrack = localStream.getAudioTracks()[0];
-      if (audioTrack) {
-        audioTrack.enabled = !audioTrack.enabled;
-        setIsMuted(!audioTrack.enabled);
-        toast({ 
-          title: audioTrack.enabled ? "Microphone Unmuted" : "Microphone Muted",
-          description: audioTrack.enabled ? "Your microphone is now active" : "Your microphone is now muted"
-        });
+  const handleShareLink = async () => {
+    if (roomData?.roomUrl) {
+      try {
+        await navigator.clipboard.writeText(roomData.roomUrl);
+        toast({ title: "Link Copied", description: "Room link has been copied to clipboard." });
+      } catch (error) {
+        console.error("Failed to copy link:", error);
+        toast({ variant: 'destructive', title: "Copy Failed", description: "Failed to copy room link." });
       }
     }
   };
 
-  const handleToggleVideo = () => {
-    if (localStream) {
-      const videoTrack = localStream.getVideoTracks()[0];
-      if (videoTrack) {
-        videoTrack.enabled = !videoTrack.enabled;
-        setIsVideoOff(!videoTrack.enabled);
-        toast({ 
-          title: videoTrack.enabled ? "Camera Turned On" : "Camera Turned Off",
-          description: videoTrack.enabled ? "Your camera is now visible" : "Your camera is now hidden"
-        });
-      }
+  const handleCopyRoomId = async () => {
+    try {
+      await navigator.clipboard.writeText(roomId);
+      toast({ title: "Room ID Copied", description: "Room ID has been copied to clipboard." });
+    } catch (error) {
+      console.error("Failed to copy room ID:", error);
+      toast({ variant: 'destructive', title: "Copy Failed", description: "Failed to copy room ID." });
     }
   };
 
   const handleHangUp = useCallback(() => {
-    if (localStream) {
-      localStream.getTracks().forEach(track => track.stop());
-    }
-    setCallStatus("Call ended");
     onHangUp();
-  }, [localStream, onHangUp]);
+  }, [onHangUp]);
 
-  const handleShareLink = async () => {
-    const currentUrl = window.location.href;
-    try {
-      await navigator.clipboard.writeText(currentUrl);
-      toast({ title: "Link Copied", description: "Room link has been copied to clipboard." });
-    } catch (error) {
-      console.error("Failed to copy link:", error);
-      toast({ variant: 'destructive', title: "Copy Failed", description: "Failed to copy room link." });
-    }
-  };
+  if (isLoading) {
+    return (
+      <div className="bg-gray-900 rounded-lg p-6">
+        <div className="text-center">
+          <Loader2 className="w-12 h-12 mx-auto mb-4 animate-spin text-blue-500" />
+          <p className="text-white text-lg">
+            {isHost ? 'Creating video call room...' : 'Joining video call room...'}
+          </p>
+          <p className="text-gray-400 text-sm mt-2">Please wait while we set up your call</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="bg-gray-900 rounded-lg p-6">
+        <div className="text-center">
+          <div className="text-red-500 text-lg mb-4">⚠️ Error</div>
+          <p className="text-white mb-4">{error}</p>
+          <Button onClick={handleHangUp} variant="outline">
+            Go Back
+          </Button>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="bg-gray-900 rounded-lg p-6">
-      {/* Call Status */}
-      <div className="text-center mb-4">
-        <div className="inline-flex items-center px-3 py-1 rounded-full bg-blue-100 text-blue-800 text-sm">
-          <div className="w-2 h-2 bg-blue-500 rounded-full mr-2 animate-pulse"></div>
-          {callStatus}
+      {/* Room Info */}
+      <div className="text-center mb-6">
+        <div className="inline-flex items-center px-3 py-1 rounded-full bg-green-100 text-green-800 text-sm mb-4">
+          <div className="w-2 h-2 bg-green-500 rounded-full mr-2 animate-pulse"></div>
+          {isHost ? 'Room Created' : 'Joined Room'}
+        </div>
+        <h2 className="text-white text-xl font-semibold mb-2">Video Consultation Room</h2>
+        <p className="text-gray-400 text-sm">Room ID: {roomData?.roomName || roomId}</p>
+        <div className="flex items-center justify-center mt-2 text-sm text-gray-400">
+          <Users className="w-4 h-4 mr-1" />
+          <span>{participantCount} participant{participantCount !== 1 ? 's' : ''}</span>
         </div>
       </div>
 
-      {/* Video Grid */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 mb-6">
-        {/* Local Video */}
-        <div className="relative bg-gray-800 rounded-lg overflow-hidden">
-          <video
-            ref={localVideoRef}
-            autoPlay
-            playsInline
-            muted
-            className="w-full h-64 object-cover"
-          />
-          {isVideoOff && (
-            <div className="absolute inset-0 bg-gray-800 flex items-center justify-center">
-              <div className="text-center text-white">
-                <VideoOff className="w-12 h-12 mx-auto mb-2 opacity-50" />
-                <p className="text-sm">Camera Off</p>
-              </div>
-            </div>
-          )}
-          <div className="absolute bottom-2 left-2 bg-black bg-opacity-50 text-white text-xs px-2 py-1 rounded">
-            You
+      {/* Room Preview */}
+      <div className="bg-gray-800 rounded-lg p-6 mb-6">
+        <div className="text-center">
+          <div className="w-16 h-16 bg-blue-500 rounded-full flex items-center justify-center mx-auto mb-4">
+            <VideoIcon className="w-8 h-8 text-white" />
           </div>
-        </div>
-
-        {/* Remote Video */}
-        <div className="relative bg-gray-800 rounded-lg overflow-hidden">
-          <video
-            ref={remoteVideoRef}
-            autoPlay
-            playsInline
-            className="w-full h-64 object-cover"
-          />
-          <div className="absolute inset-0 bg-gray-800 flex items-center justify-center">
-            <div className="text-center text-white">
-              <Loader2 className="w-12 h-12 mx-auto mb-2 animate-spin opacity-50" />
-              <p className="text-sm">Waiting for other participant...</p>
-              <p className="text-xs opacity-75 mt-1">Room ID: {roomId}</p>
-            </div>
+          <h3 className="text-white text-lg font-medium mb-2">Whereby Video Call</h3>
+          <p className="text-gray-400 text-sm mb-4">
+            {isHost 
+              ? "Click 'Join Call' to enter the video consultation room"
+              : "Click 'Join Call' to enter the existing video consultation room"
+            }
+          </p>
+          <div className="space-y-2 text-xs text-gray-500">
+            <p>• High-quality video and audio</p>
+            <p>• Screen sharing capabilities</p>
+            <p>• Chat functionality</p>
+            <p>• Recording options (if enabled)</p>
           </div>
         </div>
       </div>
 
       {/* Call Controls */}
-      <div className="flex justify-center items-center space-x-4">
+      <div className="flex justify-center items-center space-x-4 mb-6">
         <Button
-          onClick={handleToggleMute}
-          variant={isMuted ? "destructive" : "outline"}
+          onClick={handleJoinCall}
+          className="bg-blue-600 hover:bg-blue-700 text-white px-8 py-3"
           size="lg"
-          className="w-16 h-16 rounded-full"
         >
-          {isMuted ? <MicOff className="w-6 h-6" /> : <Mic className="w-6 h-6" />}
-        </Button>
-
-        <Button
-          onClick={handleHangUp}
-          variant="destructive"
-          size="lg"
-          className="w-16 h-16 rounded-full"
-        >
-          <PhoneOff className="w-6 h-6" />
-        </Button>
-
-        <Button
-          onClick={handleToggleVideo}
-          variant={isVideoOff ? "destructive" : "outline"}
-          size="lg"
-          className="w-16 h-16 rounded-full"
-        >
-          {isVideoOff ? <VideoOff className="w-6 h-6" /> : <VideoIcon className="w-6 h-6" />}
+          <ExternalLink className="w-5 h-5 mr-2" />
+          Join Call
         </Button>
 
         <Button
           onClick={handleShareLink}
           variant="outline"
           size="lg"
-          className="w-16 h-16 rounded-full"
+          className="px-8 py-3"
         >
-          <Share2 className="w-6 h-6" />
+          <Share2 className="w-5 h-5 mr-2" />
+          Share Link
+        </Button>
+
+        <Button
+          onClick={handleHangUp}
+          variant="destructive"
+          size="lg"
+          className="px-8 py-3"
+        >
+          <PhoneOff className="w-5 h-5 mr-2" />
+          End Call
         </Button>
       </div>
 
-      {/* Call Info */}
+      {/* Room Details */}
+      <div className="bg-gray-800 rounded-lg p-4 mb-4">
+        <h4 className="text-white font-medium mb-2">Room Information</h4>
+        <div className="space-y-1 text-sm text-gray-400">
+          <p><span className="text-gray-300">Room Name:</span> {roomData?.roomName || 'N/A'}</p>
+          <p><span className="text-gray-300">Participant:</span> {userId}</p>
+          <p><span className="text-gray-300">Role:</span> {isHost ? 'Host' : 'Participant'}</p>
+          <p><span className="text-gray-300">Status:</span> Ready to join</p>
+        </div>
+      </div>
+
+      {/* Room ID for sharing */}
+      <div className="bg-gray-800 rounded-lg p-4 mb-4">
+        <div className="flex items-center justify-between">
+          <div>
+            <h4 className="text-white font-medium mb-1">Room ID for Invites</h4>
+            <p className="text-gray-400 text-sm">Share this ID with others to join the same room</p>
+          </div>
+          <Button
+            onClick={handleCopyRoomId}
+            variant="outline"
+            size="sm"
+            className="ml-2"
+          >
+            <Copy className="w-4 h-4 mr-1" />
+            Copy
+          </Button>
+        </div>
+        <div className="mt-2 p-2 bg-gray-700 rounded text-sm font-mono text-gray-300 break-all">
+          {roomId}
+        </div>
+      </div>
+
+      {/* Instructions */}
       <div className="mt-6 text-center text-gray-400 text-sm">
-        <p>Room: {roomId}</p>
-        <p>User: {userId}</p>
-        <p className="mt-2 text-xs">
-          This is a demo implementation. In a real application, this would connect to other participants via WebRTC.
-        </p>
+        <p className="mb-2">💡 <strong>How to use:</strong></p>
+        <p>1. Click "Join Call" to open the video room in a new tab</p>
+        <p>2. Allow camera and microphone access when prompted</p>
+        <p>3. Share the room link or room ID with other participants</p>
+        <p>4. Use the controls in the Whereby interface to manage your call</p>
+        {isHost && (
+          <p className="mt-2 text-blue-400">🎯 <strong>You're the host!</strong> Others can join using the room ID above.</p>
+        )}
       </div>
     </div>
   );
