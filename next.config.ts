@@ -58,10 +58,10 @@ const nextConfig: NextConfig = {
     CUSTOM_KEY: process.env.CUSTOM_KEY,
   },
   
-  // Experimental features
-  experimental: {
-    appDir: true,
-  },
+  // Experimental features (appDir is enabled by default in Next.js 15)
+  // experimental: {
+  //   // Add any other experimental features here if needed
+  // },
 };
 
 export default nextConfig;
