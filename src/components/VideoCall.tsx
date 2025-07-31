@@ -17,6 +17,7 @@ const VideoCall: React.FC<VideoCallProps> = ({ userId, roomId, onHangUp }) => {
   const [isLoading, setIsLoading] = useState(true);
   const [roomData, setRoomData] = useState<any>(null);
   const [error, setError] = useState<string | null>(null);
+  const [errorDetails, setErrorDetails] = useState<string | null>(null);
   const [isHost, setIsHost] = useState(false);
   const [participantCount, setParticipantCount] = useState(1);
   const { toast } = useToast();
@@ -54,6 +55,7 @@ const VideoCall: React.FC<VideoCallProps> = ({ userId, roomId, onHangUp }) => {
 
         if (!response.ok) {
           const errorData = await response.json();
+          console.error('API Error Response:', errorData);
           throw new Error(errorData.error || 'Failed to create/join room');
         }
 
@@ -73,7 +75,16 @@ const VideoCall: React.FC<VideoCallProps> = ({ userId, roomId, onHangUp }) => {
         }
       } catch (err) {
         console.error('Error initializing room:', err);
-        setError(err instanceof Error ? err.message : 'Failed to create/join room');
+        const errorMessage = err instanceof Error ? err.message : 'Failed to create/join room';
+        setError(errorMessage);
+        
+        // Try to get more details from the error
+        if (err instanceof Error && err.message.includes('Failed to create room')) {
+          setErrorDetails('This usually means the Whereby API key is invalid or expired. Please check your environment variables.');
+        } else if (err instanceof Error && err.message.includes('Whereby API key not configured')) {
+          setErrorDetails('The Whereby API key is not set on the server. Please configure the WHEREBY_API_KEY environment variable.');
+        }
+        
         toast({ 
           variant: 'destructive', 
           title: "Room Error", 
@@ -143,7 +154,19 @@ const VideoCall: React.FC<VideoCallProps> = ({ userId, roomId, onHangUp }) => {
       <div className="bg-gray-900 rounded-lg p-6">
         <div className="text-center">
           <div className="text-red-500 text-lg mb-4">⚠️ Error</div>
-          <p className="text-white mb-4">{error}</p>
+          <p className="text-white mb-2 font-medium">{error}</p>
+          {errorDetails && (
+            <p className="text-gray-400 text-sm mb-4">{errorDetails}</p>
+          )}
+          <div className="bg-red-900 border border-red-700 rounded-lg p-4 mb-4 text-left">
+            <h4 className="text-red-300 font-medium mb-2">Troubleshooting:</h4>
+            <ul className="text-red-200 text-sm space-y-1">
+              <li>• Check if WHEREBY_API_KEY is set in Render environment variables</li>
+              <li>• Verify the API key is valid and not expired</li>
+              <li>• Ensure the subdomain 'sanhome' is correct</li>
+              <li>• Check Render logs for detailed error information</li>
+            </ul>
+          </div>
           <Button onClick={handleHangUp} variant="outline">
             Go Back
           </Button>
