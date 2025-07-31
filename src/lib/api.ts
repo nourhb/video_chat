@@ -1,6 +1,6 @@
 // API utility functions for the video consultation platform
 
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || '';
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || process.env.NEXT_PUBLIC_APP_URL || '';
 
 // Types
 export interface Room {
