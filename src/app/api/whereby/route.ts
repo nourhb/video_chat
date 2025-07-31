@@ -12,12 +12,20 @@ export async function POST(request: NextRequest) {
     }
 
     const wherebyApiKey = process.env.WHEREBY_API_KEY;
+    console.log('Whereby API Key available:', !!wherebyApiKey);
+    console.log('Whereby API Key length:', wherebyApiKey?.length || 0);
+    
     if (!wherebyApiKey) {
-      return NextResponse.json({ error: 'Whereby API key not configured' }, { status: 500 });
+      console.error('WHEREBY_API_KEY environment variable is not set');
+      return NextResponse.json({ 
+        error: 'Whereby API key not configured',
+        details: 'Please check environment variables'
+      }, { status: 500 });
     }
 
     // Check if room already exists
     if (action === 'join' && rooms.has(roomName)) {
+      console.log(`Joining existing room: ${roomName}`);
       const existingRoom = rooms.get(roomName);
       
       // Generate a token for the new participant
@@ -41,6 +49,7 @@ export async function POST(request: NextRequest) {
       }
 
       const tokenData = await tokenResponse.json();
+      console.log(`Successfully joined room: ${roomName}`);
 
       return NextResponse.json({
         roomId: existingRoom.meetingId,
@@ -52,6 +61,7 @@ export async function POST(request: NextRequest) {
     }
 
     // Create a new room
+    console.log(`Creating new room: ${roomName}`);
     const roomResponse = await fetch('https://api.whereby.com/v1/meetings', {
       method: 'POST',
       headers: {
@@ -70,10 +80,16 @@ export async function POST(request: NextRequest) {
     if (!roomResponse.ok) {
       const errorData = await roomResponse.text();
       console.error('Whereby API error:', errorData);
-      return NextResponse.json({ error: 'Failed to create room' }, { status: 500 });
+      console.error('Response status:', roomResponse.status);
+      console.error('Response headers:', Object.fromEntries(roomResponse.headers.entries()));
+      return NextResponse.json({ 
+        error: 'Failed to create room',
+        details: errorData
+      }, { status: 500 });
     }
 
     const roomData = await roomResponse.json();
+    console.log('Room created successfully:', roomData.meetingId);
 
     // Store room data
     rooms.set(roomName, {
@@ -104,6 +120,7 @@ export async function POST(request: NextRequest) {
     }
 
     const tokenData = await tokenResponse.json();
+    console.log('Token generated successfully');
 
     return NextResponse.json({
       roomId: roomData.meetingId,
@@ -114,8 +131,11 @@ export async function POST(request: NextRequest) {
     });
 
   } catch (error) {
-    console.error('Error creating Whereby room:', error);
-    return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
+    console.error('Error in Whereby API route:', error);
+    return NextResponse.json({ 
+      error: 'Internal server error',
+      details: error instanceof Error ? error.message : 'Unknown error'
+    }, { status: 500 });
   }
 }
 
@@ -130,6 +150,7 @@ export async function GET(request: NextRequest) {
     }
 
     const roomExists = rooms.has(roomName);
+    console.log(`Checking room existence: ${roomName} -> ${roomExists}`);
     return NextResponse.json({ exists: roomExists });
   } catch (error) {
     console.error('Error checking room:', error);
