@@ -5,26 +5,10 @@ const rooms = new Map();
 
 export async function POST(request: NextRequest) {
   try {
-    // Add CORS headers
-    const response = NextResponse.next();
-    response.headers.set('Access-Control-Allow-Origin', '*');
-    response.headers.set('Access-Control-Allow-Methods', 'GET, POST, OPTIONS');
-    response.headers.set('Access-Control-Allow-Headers', 'Content-Type');
-
     const { roomName, participantName, action = 'create' } = await request.json();
 
     if (!roomName) {
       return NextResponse.json({ error: 'Room name is required' }, { status: 400 });
-    }
-
-    const wherebyApiKey = process.env.WHEREBY_API_KEY;
-    
-    if (!wherebyApiKey) {
-      console.error('WHEREBY_API_KEY environment variable is not set');
-      return NextResponse.json({ 
-        error: 'Whereby API key not configured',
-        details: 'Please check environment variables'
-      }, { status: 500 });
     }
 
     // For now, let's create a simple mock response to test the flow
