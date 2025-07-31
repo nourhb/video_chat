@@ -18,7 +18,10 @@ export default function ApiTestPage() {
       const data = await response.json();
       setTestResults({ type: 'Basic API', data });
     } catch (error) {
-      setTestResults({ type: 'Basic API', error: error.message });
+      setTestResults({ 
+        type: 'Basic API', 
+        error: error instanceof Error ? error.message : 'Unknown error'
+      });
     } finally {
       setLoading(false);
     }
@@ -41,7 +44,10 @@ export default function ApiTestPage() {
       const data = await response.json();
       setTestResults({ type: 'Whereby API', data });
     } catch (error) {
-      setTestResults({ type: 'Whereby API', error: error.message });
+      setTestResults({ 
+        type: 'Whereby API', 
+        error: error instanceof Error ? error.message : 'Unknown error'
+      });
     } finally {
       setLoading(false);
     }
@@ -54,7 +60,10 @@ export default function ApiTestPage() {
       const data = await response.json();
       setTestResults({ type: 'Whereby GET', data });
     } catch (error) {
-      setTestResults({ type: 'Whereby GET', error: error.message });
+      setTestResults({ 
+        type: 'Whereby GET', 
+        error: error instanceof Error ? error.message : 'Unknown error'
+      });
     } finally {
       setLoading(false);
     }
