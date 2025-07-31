@@ -42,7 +42,7 @@ export async function createConsultation(
     // In a real application, you would save this to a database
     // For now, we'll just return success
     console.log('Creating consultation:', { ...validatedValues, roomId });
-    
+
     return {
       success: true,
       message: `Consultation scheduled for ${validatedValues.patientName} on ${validatedValues.consultationDate} at ${validatedValues.consultationTime}. Room ID: ${roomId}`,
@@ -56,7 +56,7 @@ export async function createConsultation(
         message: `Validation failed: ${error.errors.map(e => e.message).join(', ')}`
       };
     }
-    return {
+        return {
       success: false,
       message: 'Failed to create consultation'
     };
@@ -110,14 +110,14 @@ export async function createVideoRoom(
     const roomId = `room-${generateRandomString(8)}`;
     
     console.log('Creating video room:', { name, userId, roomId });
-    
-    return {
+
+      return {
       success: true,
       message: `Video room "${name}" created successfully`,
       roomId
     };
   } catch (error) {
-    return {
+        return {
       success: false,
       message: 'Failed to create video room'
     };
@@ -141,7 +141,7 @@ export async function joinVideoRoom(
       message: `Successfully joined room ${roomId}`
     };
   } catch (error) {
-    return {
+        return {
       success: false,
       message: 'Failed to join video room'
     };
@@ -169,7 +169,7 @@ export async function getRoomInfo(
     return { success: true, data: mockRoomData };
   } catch (error) {
     return { success: false, error: 'Failed to get room information' };
-  }
+    }
 }
 
     

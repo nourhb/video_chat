@@ -9,7 +9,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Video, Calendar, Users } from 'lucide-react';
 
 export default function HomePage() {
-  return (
+    return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100">
       <div className="container mx-auto px-4 py-16">
         <div className="text-center mb-12">
@@ -110,6 +110,6 @@ export default function HomePage() {
           </div>
         </div>
       </div>
-    </div>
-  );
+      </div>
+    );
 }

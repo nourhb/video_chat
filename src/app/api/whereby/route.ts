@@ -43,7 +43,6 @@ export async function POST(request: NextRequest) {
         token: tokenData.token,
         roomName: existingRoom.roomName,
         isExisting: true,
-        isMock: false,
       });
     }
 
@@ -98,7 +97,6 @@ export async function POST(request: NextRequest) {
       token: tokenData.token,
       roomName: roomData.roomName,
       isExisting: false,
-      isMock: false,
     });
   } catch (error) {
     return NextResponse.json({ error: 'Internal server error', details: error instanceof Error ? error.message : 'Unknown error' }, { status: 500 });

@@ -66,9 +66,9 @@ export default function SchedulePage() {
       // In a real app, you would redirect to the video consultation page
       // with the generated room ID
     } catch (error) {
-      toast({
+        toast({
         variant: 'destructive',
-        title: "Scheduling Failed",
+          title: "Scheduling Failed",
         description: error instanceof Error ? error.message : "There was an error scheduling your consultation. Please try again.",
       });
     } finally {
@@ -90,18 +90,18 @@ export default function SchedulePage() {
           </Link>
           <h1 className="text-3xl font-bold text-gray-900 mb-2">Schedule Consultation</h1>
           <p className="text-gray-600">Book your video consultation with a healthcare professional</p>
-        </div>
+      </div>
 
-        <Card className="shadow-lg">
-          <CardHeader>
+      <Card className="shadow-lg">
+            <CardHeader>
             <CardTitle className="flex items-center space-x-2">
               <Calendar className="w-5 h-5 text-blue-600" />
               <span>Consultation Details</span>
-            </CardTitle>
-            <CardDescription>
+              </CardTitle>
+              <CardDescription>
               Fill in the details below to schedule your video consultation
-            </CardDescription>
-          </CardHeader>
+              </CardDescription>
+            </CardHeader>
           <CardContent>
             <form onSubmit={handleSubmit} className="space-y-6">
               {/* Patient Information */}
@@ -151,7 +151,7 @@ export default function SchedulePage() {
                     <Label htmlFor="consultationDate">Date *</Label>
                     <Input
                       id="consultationDate"
-                      name="consultationDate"
+                  name="consultationDate"
                       type="date"
                       value={formData.consultationDate}
                       onChange={handleInputChange}
@@ -172,7 +172,7 @@ export default function SchedulePage() {
                     />
                   </div>
                 </div>
-              </div>
+                        </div>
 
               {/* Additional Notes */}
               <div className="space-y-4">
@@ -201,17 +201,17 @@ export default function SchedulePage() {
                   {isSubmitting ? (
                     <>
                       <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin mr-2"></div>
-                      Scheduling...
-                    </>
-                  ) : (
-                    <>
+                    Scheduling...
+                  </>
+                ) : (
+                  <>
                       <Video className="w-4 h-4 mr-2" />
                       Schedule Consultation
-                    </>
-                  )}
-                </Button>
+                  </>
+                )}
+              </Button>
               </div>
-            </form>
+          </form>
           </CardContent>
         </Card>
 
@@ -253,7 +253,7 @@ export default function SchedulePage() {
               </div>
             </div>
           </CardContent>
-        </Card>
+      </Card>
       </div>
     </div>
   );
