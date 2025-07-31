@@ -1,0 +1,395 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Consultation Booking System</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+
+        .container {
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+            padding: 40px;
+            max-width: 500px;
+            width: 100%;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        .header h1 {
+            color: #333;
+            font-size: 2.5em;
+            margin-bottom: 10px;
+        }
+
+        .header p {
+            color: #666;
+            font-size: 1.1em;
+        }
+
+        .auth-section {
+            background: #f8f9fa;
+            border-radius: 10px;
+            padding: 20px;
+            margin-bottom: 30px;
+            text-align: center;
+        }
+
+        .auth-section h3 {
+            color: #333;
+            margin-bottom: 15px;
+        }
+
+        .auth-btn {
+            background: #4285f4;
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 8px;
+            font-size: 16px;
+            cursor: pointer;
+            transition: background 0.3s;
+            text-decoration: none;
+            display: inline-block;
+        }
+
+        .auth-btn:hover {
+            background: #3367d6;
+        }
+
+        .booking-form {
+            display: none;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            color: #333;
+            font-weight: 600;
+        }
+
+        .form-group input,
+        .form-group select {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #e1e5e9;
+            border-radius: 8px;
+            font-size: 16px;
+            transition: border-color 0.3s;
+        }
+
+        .form-group input:focus,
+        .form-group select:focus {
+            outline: none;
+            border-color: #4285f4;
+        }
+
+        .submit-btn {
+            width: 100%;
+            background: #34a853;
+            color: white;
+            border: none;
+            padding: 15px;
+            border-radius: 8px;
+            font-size: 18px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background 0.3s;
+        }
+
+        .submit-btn:hover {
+            background: #2d8f47;
+        }
+
+        .submit-btn:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+        }
+
+        .success-message {
+            background: #d4edda;
+            color: #155724;
+            padding: 15px;
+            border-radius: 8px;
+            margin-top: 20px;
+            display: none;
+        }
+
+        .error-message {
+            background: #f8d7da;
+            color: #721c24;
+            padding: 15px;
+            border-radius: 8px;
+            margin-top: 20px;
+            display: none;
+        }
+
+        .meet-link {
+            background: #e3f2fd;
+            border: 2px solid #2196f3;
+            border-radius: 8px;
+            padding: 15px;
+            margin-top: 20px;
+            text-align: center;
+            display: none;
+        }
+
+        .meet-link a {
+            color: #2196f3;
+            text-decoration: none;
+            font-weight: 600;
+        }
+
+        .meet-link a:hover {
+            text-decoration: underline;
+        }
+
+        .loading {
+            display: none;
+            text-align: center;
+            margin-top: 20px;
+        }
+
+        .spinner {
+            border: 4px solid #f3f3f3;
+            border-top: 4px solid #4285f4;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 10px;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .embed-info {
+            background: #fff3cd;
+            border: 1px solid #ffeaa7;
+            border-radius: 8px;
+            padding: 15px;
+            margin-top: 20px;
+            font-size: 14px;
+        }
+
+        .embed-info code {
+            background: #f8f9fa;
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-family: monospace;
+        }
+
+        @media (max-width: 600px) {
+            .container {
+                padding: 20px;
+            }
+            
+            .header h1 {
+                font-size: 2em;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1><i class="fas fa-calendar-check"></i> Consultation Booking</h1>
+            <p>Book your free consultation and get a Google Meet link instantly</p>
+        </div>
+
+        <div class="auth-section" id="authSection">
+            <h3><i class="fas fa-lock"></i> Authentication Required</h3>
+            <p>To create Google Meet links, we need to authenticate with your Google account.</p>
+            <a href="/auth/google" class="auth-btn">
+                <i class="fab fa-google"></i> Connect with Google
+            </a>
+        </div>
+
+        <form class="booking-form" id="bookingForm">
+            <div class="form-group">
+                <label for="name"><i class="fas fa-user"></i> Full Name</label>
+                <input type="text" id="name" name="name" required>
+            </div>
+
+            <div class="form-group">
+                <label for="email"><i class="fas fa-envelope"></i> Email Address</label>
+                <input type="email" id="email" name="email" required>
+            </div>
+
+            <div class="form-group">
+                <label for="date"><i class="fas fa-calendar"></i> Date</label>
+                <input type="date" id="date" name="date" required>
+            </div>
+
+            <div class="form-group">
+                <label for="time"><i class="fas fa-clock"></i> Time</label>
+                <select id="time" name="time" required>
+                    <option value="">Select a time</option>
+                    <option value="09:00">9:00 AM</option>
+                    <option value="10:00">10:00 AM</option>
+                    <option value="11:00">11:00 AM</option>
+                    <option value="12:00">12:00 PM</option>
+                    <option value="13:00">1:00 PM</option>
+                    <option value="14:00">2:00 PM</option>
+                    <option value="15:00">3:00 PM</option>
+                    <option value="16:00">4:00 PM</option>
+                    <option value="17:00">5:00 PM</option>
+                </select>
+            </div>
+
+            <button type="submit" class="submit-btn" id="submitBtn">
+                <i class="fas fa-check"></i> Book Consultation
+            </button>
+        </form>
+
+        <div class="loading" id="loading">
+            <div class="spinner"></div>
+            <p>Creating your consultation and Google Meet link...</p>
+        </div>
+
+        <div class="success-message" id="successMessage">
+            <i class="fas fa-check-circle"></i> Your consultation has been booked successfully!
+        </div>
+
+        <div class="error-message" id="errorMessage">
+            <i class="fas fa-exclamation-circle"></i> <span id="errorText"></span>
+        </div>
+
+        <div class="meet-link" id="meetLink">
+            <h4><i class="fas fa-video"></i> Your Google Meet Link</h4>
+            <a href="#" id="meetUrl" target="_blank">Join Meeting</a>
+            <p style="margin-top: 10px; font-size: 14px; color: #666;">
+                A confirmation email has been sent to your email address.
+            </p>
+        </div>
+
+        <div class="embed-info">
+            <h4><i class="fas fa-code"></i> Embed This Form</h4>
+            <p>To embed this booking form on your website, use this iframe:</p>
+            <code>&lt;iframe src="http://localhost:3000/embed" width="100%" height="600" frameborder="0"&gt;&lt;/iframe&gt;</code>
+        </div>
+    </div>
+
+    <script>
+        // Set minimum date to today
+        const today = new Date().toISOString().split('T')[0];
+        document.getElementById('date').min = today;
+
+        // Check authentication status on page load
+        window.addEventListener('load', async () => {
+            const urlParams = new URLSearchParams(window.location.search);
+            const authStatus = urlParams.get('auth');
+            
+            if (authStatus === 'success') {
+                document.getElementById('authSection').style.display = 'none';
+                document.getElementById('bookingForm').style.display = 'block';
+                showMessage('Authentication successful! You can now book consultations.', 'success');
+            } else if (authStatus === 'error') {
+                showMessage('Authentication failed. Please try again.', 'error');
+            } else {
+                // Check if tokens exist
+                try {
+                    const response = await fetch('/api/bookings');
+                    if (response.ok) {
+                        document.getElementById('authSection').style.display = 'none';
+                        document.getElementById('bookingForm').style.display = 'block';
+                    }
+                } catch (error) {
+                    console.log('Not authenticated');
+                }
+            }
+        });
+
+        // Handle form submission
+        document.getElementById('bookingForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            const formData = new FormData(e.target);
+            const name = formData.get('name');
+            const email = formData.get('email');
+            const date = formData.get('date');
+            const time = formData.get('time');
+            
+            if (!name || !email || !date || !time) {
+                showMessage('Please fill in all fields.', 'error');
+                return;
+            }
+            
+            const dateTime = `${date}T${time}:00.000Z`;
+            
+            // Show loading
+            document.getElementById('loading').style.display = 'block';
+            document.getElementById('submitBtn').disabled = true;
+            hideMessages();
+            
+            try {
+                const response = await fetch('/api/book', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ name, email, dateTime })
+                });
+                
+                const data = await response.json();
+                
+                if (data.success) {
+                    document.getElementById('meetUrl').href = data.meetLink;
+                    document.getElementById('meetLink').style.display = 'block';
+                    showMessage('Consultation booked successfully!', 'success');
+                    e.target.reset();
+                } else {
+                    showMessage(data.error || 'Failed to book consultation.', 'error');
+                }
+            } catch (error) {
+                showMessage('Network error. Please try again.', 'error');
+            } finally {
+                document.getElementById('loading').style.display = 'none';
+                document.getElementById('submitBtn').disabled = false;
+            }
+        });
+
+        function showMessage(message, type) {
+            hideMessages();
+            if (type === 'success') {
+                document.getElementById('successMessage').style.display = 'block';
+                document.getElementById('successMessage').innerHTML = `<i class="fas fa-check-circle"></i> ${message}`;
+            } else {
+                document.getElementById('errorMessage').style.display = 'block';
+                document.getElementById('errorText').textContent = message;
+            }
+        }
+
+        function hideMessages() {
+            document.getElementById('successMessage').style.display = 'none';
+            document.getElementById('errorMessage').style.display = 'none';
+        }
+    </script>
+</body>
+</html> 

@@ -1,0 +1,302 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Demo - Consultation Booking Embed</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            line-height: 1.6;
+            color: #333;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 60px 20px;
+            text-align: center;
+        }
+
+        .header h1 {
+            font-size: 3em;
+            margin-bottom: 20px;
+        }
+
+        .header p {
+            font-size: 1.2em;
+            opacity: 0.9;
+        }
+
+        .content {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 40px 20px;
+        }
+
+        .intro {
+            text-align: center;
+            margin-bottom: 60px;
+        }
+
+        .intro h2 {
+            font-size: 2.5em;
+            margin-bottom: 20px;
+            color: #333;
+        }
+
+        .intro p {
+            font-size: 1.1em;
+            color: #666;
+            max-width: 600px;
+            margin: 0 auto;
+        }
+
+        .demo-section {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 40px;
+            margin-bottom: 60px;
+        }
+
+        .demo-text {
+            padding: 20px;
+        }
+
+        .demo-text h3 {
+            font-size: 1.8em;
+            margin-bottom: 20px;
+            color: #333;
+        }
+
+        .demo-text p {
+            margin-bottom: 15px;
+            color: #666;
+        }
+
+        .demo-text ul {
+            margin-left: 20px;
+            color: #666;
+        }
+
+        .demo-text li {
+            margin-bottom: 8px;
+        }
+
+        .embed-container {
+            background: #f8f9fa;
+            border-radius: 15px;
+            padding: 20px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+        }
+
+        .embed-frame {
+            width: 100%;
+            height: 500px;
+            border: none;
+            border-radius: 10px;
+            background: white;
+        }
+
+        .code-section {
+            background: #f8f9fa;
+            border-radius: 15px;
+            padding: 30px;
+            margin-bottom: 40px;
+        }
+
+        .code-section h3 {
+            font-size: 1.5em;
+            margin-bottom: 20px;
+            color: #333;
+        }
+
+        .code-block {
+            background: #2d3748;
+            color: #e2e8f0;
+            padding: 20px;
+            border-radius: 8px;
+            overflow-x: auto;
+            font-family: 'Courier New', monospace;
+            font-size: 14px;
+            line-height: 1.5;
+        }
+
+        .features {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 30px;
+            margin-bottom: 60px;
+        }
+
+        .feature {
+            background: white;
+            padding: 30px;
+            border-radius: 15px;
+            box-shadow: 0 5px 20px rgba(0, 0, 0, 0.1);
+            text-align: center;
+        }
+
+        .feature i {
+            font-size: 3em;
+            color: #4285f4;
+            margin-bottom: 20px;
+        }
+
+        .feature h4 {
+            font-size: 1.3em;
+            margin-bottom: 15px;
+            color: #333;
+        }
+
+        .feature p {
+            color: #666;
+        }
+
+        .cta {
+            background: linear-gradient(135deg, #34a853 0%, #2d8f47 100%);
+            color: white;
+            text-align: center;
+            padding: 60px 20px;
+            border-radius: 15px;
+        }
+
+        .cta h3 {
+            font-size: 2.5em;
+            margin-bottom: 20px;
+        }
+
+        .cta p {
+            font-size: 1.2em;
+            margin-bottom: 30px;
+            opacity: 0.9;
+        }
+
+        .cta-btn {
+            background: white;
+            color: #34a853;
+            padding: 15px 30px;
+            border-radius: 8px;
+            text-decoration: none;
+            font-weight: 600;
+            font-size: 1.1em;
+            transition: transform 0.3s;
+            display: inline-block;
+        }
+
+        .cta-btn:hover {
+            transform: translateY(-2px);
+        }
+
+        @media (max-width: 768px) {
+            .demo-section {
+                grid-template-columns: 1fr;
+            }
+            
+            .header h1 {
+                font-size: 2em;
+            }
+            
+            .intro h2 {
+                font-size: 2em;
+            }
+        }
+    </style>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+</head>
+<body>
+    <div class="header">
+        <h1><i class="fas fa-calendar-check"></i> Consultation Booking Demo</h1>
+        <p>See how easy it is to embed our booking system on your website</p>
+    </div>
+
+    <div class="content">
+        <div class="intro">
+            <h2>Professional Consultation Booking</h2>
+            <p>This demo shows how our consultation booking module can be seamlessly integrated into any website. The form below is embedded using a simple iframe and automatically creates Google Meet links for each booking.</p>
+        </div>
+
+        <div class="demo-section">
+            <div class="demo-text">
+                <h3>How It Works</h3>
+                <p>Our booking system provides a complete solution for scheduling online consultations:</p>
+                <ul>
+                    <li><strong>Automatic Google Meet Integration</strong> - Creates Meet links instantly</li>
+                    <li><strong>Email Notifications</strong> - Sends confirmation emails with meeting details</li>
+                    <li><strong>Reminder System</strong> - Automated 10-minute reminders before meetings</li>
+                    <li><strong>Responsive Design</strong> - Works perfectly on all devices</li>
+                    <li><strong>Easy Integration</strong> - Simple iframe embed for any website</li>
+                </ul>
+                <p>Perfect for consultants, coaches, therapists, and anyone who needs to schedule online meetings with clients.</p>
+            </div>
+            <div class="embed-container">
+                <iframe 
+                    src="/embed" 
+                    class="embed-frame"
+                    title="Consultation Booking Form">
+                </iframe>
+            </div>
+        </div>
+
+        <div class="code-section">
+            <h3>Embed Code</h3>
+            <p>Copy and paste this code to embed the booking form on your website:</p>
+            <div class="code-block">
+&lt;iframe 
+  src="http://localhost:3000/embed" 
+  width="100%" 
+  height="600" 
+  frameborder="0"
+  style="border-radius: 10px; box-shadow: 0 4px 20px rgba(0,0,0,0.1);"
+  title="Consultation Booking Form"&gt;
+&lt;/iframe&gt;
+            </div>
+        </div>
+
+        <div class="features">
+            <div class="feature">
+                <i class="fas fa-video"></i>
+                <h4>Google Meet Integration</h4>
+                <p>Automatically creates Google Meet links for each consultation booking, making it easy for clients to join meetings.</p>
+            </div>
+            <div class="feature">
+                <i class="fas fa-envelope"></i>
+                <h4>Email Automation</h4>
+                <p>Sends professional confirmation emails with meeting details and automatic reminders before each consultation.</p>
+            </div>
+            <div class="feature">
+                <i class="fas fa-mobile-alt"></i>
+                <h4>Mobile Responsive</h4>
+                <p>Fully responsive design that works perfectly on desktop, tablet, and mobile devices.</p>
+            </div>
+            <div class="feature">
+                <i class="fas fa-shield-alt"></i>
+                <h4>Secure & Reliable</h4>
+                <p>Uses Google OAuth 2.0 for secure authentication and reliable Google Calendar integration.</p>
+            </div>
+            <div class="feature">
+                <i class="fas fa-code"></i>
+                <h4>Easy Integration</h4>
+                <p>Simple iframe embed that can be added to any website with just a few lines of code.</p>
+            </div>
+            <div class="feature">
+                <i class="fas fa-clock"></i>
+                <h4>Smart Scheduling</h4>
+                <p>Flexible time slot selection and automatic calendar management to keep your schedule organized.</p>
+            </div>
+        </div>
+
+        <div class="cta">
+            <h3>Ready to Get Started?</h3>
+            <p>Set up your own consultation booking system in minutes</p>
+            <a href="/" class="cta-btn">Try the Full Version</a>
+        </div>
+    </div>
+</body>
+</html> 
