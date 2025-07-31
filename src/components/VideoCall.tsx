@@ -4,7 +4,7 @@
 
 import React, { useEffect, useState, useCallback } from 'react';
 import { Button } from './ui/button';
-import { PhoneOff, Mic, MicOff, Video as VideoIcon, VideoOff, Share2, Loader2, ExternalLink, Copy, Users } from 'lucide-react';
+import { PhoneOff, Mic, MicOff, Video as VideoIcon, VideoOff, Share2, Loader2, ExternalLink, Copy, Users, AlertTriangle } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 
 interface VideoCallProps {
@@ -89,12 +89,21 @@ const VideoCall: React.FC<VideoCallProps> = ({ userId, roomId, onHangUp }) => {
 
   const handleJoinCall = () => {
     if (roomData?.roomUrl) {
-      // Open Whereby room in a new tab
-      window.open(roomData.roomUrl, '_blank');
-      toast({ 
-        title: "Opening Video Call", 
-        description: "Video call is opening in a new tab." 
-      });
+      if (roomData.isMock) {
+        toast({ 
+          title: "Mock Mode", 
+          description: "This is a test mode. In production, this would open a real Whereby video call." 
+        });
+        // For mock mode, just show a message
+        window.open('https://whereby.com', '_blank');
+      } else {
+        // Open Whereby room in a new tab
+        window.open(roomData.roomUrl, '_blank');
+        toast({ 
+          title: "Opening Video Call", 
+          description: "Video call is opening in a new tab." 
+        });
+      }
     }
   };
 
@@ -154,6 +163,20 @@ const VideoCall: React.FC<VideoCallProps> = ({ userId, roomId, onHangUp }) => {
 
   return (
     <div className="bg-gray-900 rounded-lg p-6">
+      {/* Mock Mode Warning */}
+      {roomData?.isMock && (
+        <div className="bg-yellow-900 border border-yellow-700 rounded-lg p-4 mb-6">
+          <div className="flex items-center space-x-2">
+            <AlertTriangle className="w-5 h-5 text-yellow-400" />
+            <h3 className="text-yellow-400 font-medium">Test Mode</h3>
+          </div>
+          <p className="text-yellow-300 text-sm mt-1">
+            This is running in test mode. The Whereby API integration is being tested. 
+            Room creation and joining functionality is working, but video calls are simulated.
+          </p>
+        </div>
+      )}
+
       {/* Room Info */}
       <div className="text-center mb-6">
         <div className="inline-flex items-center px-3 py-1 rounded-full bg-green-100 text-green-800 text-sm mb-4">
@@ -174,7 +197,9 @@ const VideoCall: React.FC<VideoCallProps> = ({ userId, roomId, onHangUp }) => {
           <div className="w-16 h-16 bg-blue-500 rounded-full flex items-center justify-center mx-auto mb-4">
             <VideoIcon className="w-8 h-8 text-white" />
           </div>
-          <h3 className="text-white text-lg font-medium mb-2">Whereby Video Call</h3>
+          <h3 className="text-white text-lg font-medium mb-2">
+            {roomData?.isMock ? 'Test Video Call' : 'Whereby Video Call'}
+          </h3>
           <p className="text-gray-400 text-sm mb-4">
             {isHost 
               ? "Click 'Join Call' to enter the video consultation room"
@@ -198,7 +223,7 @@ const VideoCall: React.FC<VideoCallProps> = ({ userId, roomId, onHangUp }) => {
           size="lg"
         >
           <ExternalLink className="w-5 h-5 mr-2" />
-          Join Call
+          {roomData?.isMock ? 'Test Call' : 'Join Call'}
         </Button>
 
         <Button
@@ -230,6 +255,9 @@ const VideoCall: React.FC<VideoCallProps> = ({ userId, roomId, onHangUp }) => {
           <p><span className="text-gray-300">Participant:</span> {userId}</p>
           <p><span className="text-gray-300">Role:</span> {isHost ? 'Host' : 'Participant'}</p>
           <p><span className="text-gray-300">Status:</span> Ready to join</p>
+          {roomData?.isMock && (
+            <p><span className="text-gray-300">Mode:</span> <span className="text-yellow-400">Test Mode</span></p>
+          )}
         </div>
       </div>
 
@@ -258,12 +286,15 @@ const VideoCall: React.FC<VideoCallProps> = ({ userId, roomId, onHangUp }) => {
       {/* Instructions */}
       <div className="mt-6 text-center text-gray-400 text-sm">
         <p className="mb-2">💡 <strong>How to use:</strong></p>
-        <p>1. Click "Join Call" to open the video room in a new tab</p>
+        <p>1. Click "{roomData?.isMock ? 'Test Call' : 'Join Call'}" to open the video room</p>
         <p>2. Allow camera and microphone access when prompted</p>
         <p>3. Share the room link or room ID with other participants</p>
-        <p>4. Use the controls in the Whereby interface to manage your call</p>
+        <p>4. Use the controls in the video interface to manage your call</p>
         {isHost && (
           <p className="mt-2 text-blue-400">🎯 <strong>You're the host!</strong> Others can join using the room ID above.</p>
+        )}
+        {roomData?.isMock && (
+          <p className="mt-2 text-yellow-400">🧪 <strong>Test Mode:</strong> API integration is working correctly!</p>
         )}
       </div>
     </div>
